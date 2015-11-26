@@ -65,7 +65,7 @@ d3.json("tcrc.json", function(error, tcrc) {
 	var crc = topojson.feature(tcrc, tcrc.objects.crc);
 	
 	var projection = d3.geo.mercator()
-	.center([-120, 40])
+	.center([-120, 35])
     .scale(1300)
     .translate([width / 2, height / 2]);
     
