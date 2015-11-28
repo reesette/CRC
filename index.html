@@ -3,13 +3,13 @@
 <style>
 
 	
-	.crc.USA-3521 { fill: #cdd; }
-	.crc.USA-3522 { fill: #cdc; }
-	.crc.USA-3523 { fill: #dcd; }
-	.crc.USA-3524 { fill: #ccc; }
-	.crc.USA-3526 { fill: #ddd; }
-	.crc.USA-3527 { fill: #666; }
-	.crc.USA-3520 { fill: #aaa; }
+	.crc.US04 { fill: #cdd; }
+	.crc.US06 { fill: #cdc; }
+	.crc.US08 { fill: #dcd; }
+	.crc.US32 { fill: #ccc; }
+	.crc.US35 { fill: #ddd; }
+	.crc.US49 { fill: #666; }
+	.crc.US56 { fill: #aaa; }
 	
 	.crc-boundary {
      fill: none;
@@ -39,12 +39,17 @@
 }
 
 
+
+
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script>
 
+var valueById = [
+   .185, .086, .125,  .065, .133, .024, .15
+];
 
 var width = 960,
     height = 1160;
@@ -77,11 +82,31 @@ d3.json("tcrc.json", function(error, tcrc) {
     // .attr("d", path);
     
     
-    svg.selectAll(".crc")
+    /*svg.selectAll(".crc")
     .data(topojson.feature(tcrc, tcrc.objects.crc).features)
   .enter().append("path")
-    .attr("class", function(d) { return "crc " + d.id; })
-    .attr("d", path);
+    .attr("class", function(d) { return "crc " + d.properties.fips; })
+    .attr("d", path); */
+    
+    
+    
+      svg.selectAll(".crc")
+      .data(topojson.feature(tcrc, tcrc.objects.crc).features)
+    .enter().append("path")
+      .attr("class", function(d) { return "crc " + d.properties.fips;})
+      .attr("d", path)
+      .attr("transform", function(d) {
+        var centroid = path.centroid(d),
+            x = centroid[0],
+            y = centroid[1];
+        return "translate(" + x + "," + y + ")"
+            + "scale(" + Math.sqrt(valueById[d.id] * 5 || 0) + ")"
+            + "translate(" + -x + "," + -y + ")";
+      })
+      .style("stroke-width", function(d) {
+        return 1 / Math.sqrt(valueById[d.id] * 5 || 1);
+      });
+     
 	
 	//svg.append("path")
     //.datum(topojson.mesh(tcrc, tcrc.objects.crc, function(a, b) { return a !== b && a.id !== "USA-3520"; }))
