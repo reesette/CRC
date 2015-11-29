@@ -7,7 +7,7 @@
 	.crc.US06 { fill: #cdc; }
 	.crc.US08 { fill: #dcd; }
 	.crc.US32 { fill: #ccc; }
-	.crc.US35 { fill: #ddd; }
+	.crc.US35 { fill: #bbb; }
 	.crc.US49 { fill: #666; }
 	.crc.US56 { fill: #aaa; }
 	
@@ -18,9 +18,13 @@
      stroke-linejoin: round;
     }
 
-   /* .crc-boundary.USA-3520{
-     stroke: red;
-    } */
+
+    
+     .crc-river { stroke: cadetblue; 
+          fill: none; 
+          stroke-linejoin: round; 
+          stroke-linecap: round; 
+  }
 
 
 	.crc-boundary-exterior {
@@ -37,22 +41,42 @@
  	 font-weight: 300;
  	 text-anchor: middle;
 }
-
-
-
+	header {color: #666;
+	height: 65px
+}
+	
+	h1 { color: #666;
+	background: #333;
+	text-align: left;
+	padding: 5px
+}
 
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
+	<div class = "header">
+		<h1>Colorado River Cartogram</h1>
+
+	</div>
+
+<div class = "cartogram">
+
 <script>
 
 var valueById = [
    .185, .086, .125,  .065, .133, .024, .15
 ];
 
-var width = 960,
-    height = 1160;
+var xBoundsbyId = [
+   [0,1], [0,2], [0,3],  [0,4], [0,5], [0,6], [0,7]
+];
+var yBoundsbyId = [
+   [1,1], [2,1], [3,1],  [4,1], [5,1], [6,1], [7,1]
+];
+
+var width = 860,
+    height = 760;
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
@@ -76,29 +100,21 @@ d3.json("tcrc.json", function(error, tcrc) {
     
     var path = d3.geo.path()
     .projection(projection);
-	
-	//svg.append("path")
-    // .datum(crc)
-    // .attr("d", path);
-    
-    
-    /*svg.selectAll(".crc")
-    .data(topojson.feature(tcrc, tcrc.objects.crc).features)
-  .enter().append("path")
-    .attr("class", function(d) { return "crc " + d.properties.fips; })
-    .attr("d", path); */
-    
-    
-    
+     
       svg.selectAll(".crc")
       .data(topojson.feature(tcrc, tcrc.objects.crc).features)
     .enter().append("path")
       .attr("class", function(d) { return "crc " + d.properties.fips;})
       .attr("d", path)
       .attr("transform", function(d) {
-        var centroid = path.centroid(d),
-            x = centroid[0],
-            y = centroid[1];
+    var bounds = path.bounds(d),    
+     // x = bounds[0][1],
+     // y = bounds[1][0];    
+    	dx = bounds[1][0] - bounds[0][0],
+      	dy = bounds[1][1] - bounds[0][1],
+      	x = (bounds[0][0] + bounds[1][0]) / 2,
+        y = (bounds[0][1] + bounds[1][1]) / 2
+      
         return "translate(" + x + "," + y + ")"
             + "scale(" + Math.sqrt(valueById[d.id] * 5 || 0) + ")"
             + "translate(" + -x + "," + -y + ")";
@@ -107,12 +123,6 @@ d3.json("tcrc.json", function(error, tcrc) {
         return 1 / Math.sqrt(valueById[d.id] * 5 || 1);
       });
      
-	
-	//svg.append("path")
-    //.datum(topojson.mesh(tcrc, tcrc.objects.crc, function(a, b) { return a !== b && a.id !== "USA-3520"; }))
-    //.attr("d", path)
-    //.attr("class", "crc-boundary");
-    
     //interior boundaries where a does not = b
     svg.append("path")
     .datum(topojson.mesh(tcrc, tcrc.objects.crc, function(a, b) { return a !== b ; }))
@@ -133,9 +143,31 @@ d3.json("tcrc.json", function(error, tcrc) {
     .attr("dy", ".35em")
     .text(function(d) { return d.properties.name; });
 	
+	 
 	
 });
+
+
+d3.json("tcrc_rivers.json", function(error, tcrc_rivers) {
+  if (error) return console.error(error);
+
+	var crc_rivers = topojson.feature(tcrc_rivers, tcrc_rivers.objects.crc_rivers);
+
+	var projection = d3.geo.mercator()
+	.center([-120, 35])
+    .scale(1300)
+    .translate([width / 2, height / 2])
+    ;
     
-    
+	var path = d3.geo.path()
+    .projection(projection);
+
+    svg.append("path")
+    .datum(topojson.feature(tcrc_rivers, tcrc_rivers.objects.crc_rivers))
+    .attr("d", path); 	
+      
+}); 
 
 </script>
+</div>
+</body>
